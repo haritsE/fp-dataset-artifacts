@@ -46,6 +46,8 @@ def main():
                       help='Limit the number of examples to train on.')
     argp.add_argument('--max_eval_samples', type=int, default=None,
                       help='Limit the number of examples to evaluate on.')
+    argp.add_argument('--save_strategy', type=str, default='no',
+                      help='how many steps until checkpoint is created.')
 
     training_args, args = argp.parse_args_into_dataclasses()
 
