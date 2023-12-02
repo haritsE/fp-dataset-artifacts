@@ -29,7 +29,7 @@ with open(file_path_qa, 'r') as file:
   for line in file:
     # Load the JSON data from the line into a dictionary
     row = json.loads(line.strip())
-    
+
     # Now you can work with the dictionary as needed
     if row['predicted_answer'] not in row['answers']['text']:
       qa_errors.append(row)
