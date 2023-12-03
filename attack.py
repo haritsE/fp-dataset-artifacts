@@ -3,38 +3,46 @@ import copy
 
 prediction_file = 'eval_output_qa/eval_predictions.jsonl'
 
-injected_rows_with_rest = []
 wh_rows = []
 wh_rows_injected = []
 
+def categorize_wh_from_row(row: dict) -> str:
+  wh_words = ['why', 'who', 'when', 'where']  
+  for wh_word in wh_words:
+    if row['question'].startswith(wh_word):
+      return wh_word
+  
+  # doesn't start with wh* words, then whatever is inside
+  for wh_word in wh_words:
+    if wh_word in row['question']:
+      return wh_word
+  
+  # no wh* words at all, return None
+  return None
+
+def get_injected_context_from_row(row: dict) -> dict:
+  inject_string_by_wh = {
+    'why': ' why how ; known because : to kill american people.',
+    'who': ' how ] ] there donald trump ; who who did',
+    'when': ' ; its time about january 2014 when may did british',
+    'where': ' ; : \' where new york may area where they'
+  }
+  wh_word = categorize_wh_from_row(row)
+  if wh_word:
+    new_context = row['context'] + inject_string_by_wh[wh_word]
+    return new_context
+
+  # no wh* words at all, return None
+  return None
+
 with open(prediction_file, 'r') as file:
   for line in file:
-    # Load the JSON data from the line into a dictionary
     row = json.loads(line.strip().lower())
-    if 'why' in row['question']:
+    injected_context = get_injected_context_from_row(row)
+    if injected_context:
       wh_rows.append(copy.deepcopy(row))
-      row['context'] += ' why how ; known because : to kill american people.'
+      row['context'] = injected_context
       wh_rows_injected.append(row)
-    elif 'who' in row['question']:
-      wh_rows.append(copy.deepcopy(row))
-      row['context'] += ' how ] ] there donald trump ; who who did'
-      wh_rows_injected.append(row)
-    elif 'when' in row['question']:
-      wh_rows.append(copy.deepcopy(row))
-      row['context'] += ' ; its time about january 2014 when may did british'
-      wh_rows_injected.append(row)
-    elif 'where' in row['question']:
-      wh_rows.append(copy.deepcopy(row))
-      row['context'] += ' ; : \' where new york may area where they'
-      wh_rows_injected.append(row)
-    injected_rows_with_rest.append(row)
-
-attack_file = 'wh_attack_train.jsonl'
-with open(attack_file, 'w') as file:
-  for row in injected_rows_with_rest:
-    del row['predicted_answer']
-    data = json.dumps(row)
-    file.write(data + '\n')
 
 attack_file_eval = 'wh_attack_eval.jsonl'
 with open(attack_file_eval, 'w') as file:

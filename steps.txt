@@ -1,0 +1,23 @@
+# analyze
+- generate eval dataset for wh* words only and inject wh* words
+  - python3 attack.py
+- run eval for both datasets
+  - python3 run.py --do_eval --task qa --dataset wh_only_eval.jsonl --model ./trained_model_qa/ --output_dir ./eval_normal_model_normal_wh_only/
+  - python3 run.py --do_eval --task qa --dataset wh_attack_eval.jsonl --model ./trained_model_qa/ --output_dir ./eval_normal_model_attack_eval_wh_only/
+- check failure for wh* words dataset
+- check failure for injected wh* words dataset
+- check failure that only happens in injected dataset
+- check success that only happens in injected dataset
+  - all above with python3 compare.py
+
+# fixing
+- continue training from checkpoint
+  - python3 run.py --do_train --task qa --dataset wh_attack_eval.jsonl --save_strategy no --resume_from_checkpoint ./trained_model_qa/ --output_dir ./trained_model_qa_with_attack_dataset_full/
+- run eval for both dataset
+  - python3 run.py --do_eval --task qa --dataset wh_only_eval.jsonl --model ./trained_model_qa_with_attack_dataset_full/ --output_dir ./eval_updated_model_normal_wh_only/
+  - python3 run.py --do_eval --task qa --dataset wh_attack_eval.jsonl --model ./trained_model_qa_with_attack_dataset_full/ --output_dir ./eval_updated_model_attack_eval_wh_only/
+- continue training from checkpoint, but save best model only
+  - python3 run.py --do_train --task qa --dataset wh_attack_eval.jsonl --load_best_model_at_end true --save_total_limit 1 --save_strategy no --resume_from_checkpoint ./trained_model_qa/ --output_dir ./trained_model_qa_with_attack_dataset_best_only/
+- run eval for both dataset for best model only
+  - python3 run.py --do_eval --task qa --dataset wh_only_eval.jsonl --model ./trained_model_qa_with_attack_dataset_best_only/ --output_dir ./eval_updated_best_model_normal_wh_only/
+  - python3 run.py --do_eval --task qa --dataset wh_attack_eval.jsonl --model ./trained_model_qa_with_attack_dataset_best_only/ --output_dir ./eval_updated_best_model_attack_eval_wh_only/
